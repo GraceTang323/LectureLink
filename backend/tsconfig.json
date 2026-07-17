@@ -2,10 +2,12 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "nodenext",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "rewriteRelativeImportExtensions": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
-    "noEmit": true,
+    "noEmit": false, // Set to false to allow emitting compiled js files
     "strict": true,
     "skipLibCheck": true
   }
