@@ -1,4 +1,6 @@
-// This file is a migration runner for the database. It will run all the migration files in the migrations folder in order to set up the database schema.
+// This file is a migration runner for the database. 
+// It will run all the migration files in the migrations folder 
+// in order to set up the database schema.
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
