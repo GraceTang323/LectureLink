@@ -43,18 +43,19 @@ docker compose up -d
 ```md
 lecture-link/
 ├── backend/
-│   └── src/
-├── db
-│   ├── migrate.ts
-│   ├── migrations
-│   │   ├── 001_create_users.sql
-│   │   ├── 002_create_interests_and_courses.sql
-│   │   ├──...
-│   └── pool.ts
-├── routes
-│   └── auth.ts
-├── server.ts
+│   ├── dist/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── db/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── util/
+│   │   └── server.ts
+│   └── Dockerfile
+├── docs/
+│   └── BACKEND.md
 ├── frontend/
+├── docker-compose.yml
 └── README.md
 ```
 
