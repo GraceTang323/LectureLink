@@ -16,3 +16,16 @@ export async function register(req: Request, res: Response) {
     }
     
 }
+
+export async function login(req: Request, res: Response) {
+    try {
+        const { email, password } = req.body;
+
+        const result = await authService.login(email, password);
+        res.status(result.status).json(result.data);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
