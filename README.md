@@ -40,6 +40,25 @@ docker compose up -d
 
 # Architecture
 
+```md
+lecture-link/
+├── backend/
+│   ├── dist/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── db/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── util/
+│   │   └── server.ts
+│   └── Dockerfile
+├── docs/
+│   └── BACKEND.md
+├── frontend/
+├── docker-compose.yml
+└── README.md
+```
+
 ## Database
 
 All data is stored using PostgreSQL, which handles user information, matching logic, messages, and more.
