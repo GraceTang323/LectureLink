@@ -29,3 +29,29 @@ export async function login(req: Request, res: Response) {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+
+export async function refresh(req: Request, res: Response) {
+    try {
+        const incomingToken = req.body.refreshToken;
+
+        const result = await authService.refresh(incomingToken);
+        res.status(result.status).json(result.data);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export async function logout(req: Request, res: Response) {
+    try {
+        const incomingToken = req.body.refreshToken;
+
+        const result = await authService.logout(incomingToken);
+        res.status(result.status).json(result.data);
+        
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}

@@ -1,25 +1,28 @@
 // Defines the API routes for user authentication
-// Maps URLs to controller functions that handle logic
+// Maps HTTP URLs to controller functions that handle logic
 import { Router, type Request, type Response } from 'express';
-import { login, register } from '../controllers/authController.ts';
+import * as authController from '../controllers/authController.ts';
 
 // Create a new router instance instead of using the main app instance
 const router = Router();
 
 router.post('/register', async (req: Request, res: Response) => {
-  // Call the register controller
-  await register(req, res);
+    await authController.register(req, res);
 });
 
 router.post('/login', async (req: Request, res: Response) => {
-  await login(req, res);
+    await authController.login(req, res);
 });
 
 router.post('/refresh', async (req: Request, res: Response) => {
-    res.send('Refresh token endpoint');
+    await authController.refresh(req, res);
 })
 
-router.post('/me', async (req: Request, res: Response) => {
+router.post('/logout', async (req: Request, res: Response) => {
+    await authController.logout(req, res);
+})
+
+router.get('/me', async (req: Request, res: Response) => {
     res.send('User info endpoint');
 })
 

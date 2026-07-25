@@ -33,7 +33,9 @@ The ```db``` folder contains all logic associated with the postgres connection.
 
 ## API
 
-The backend features an extensive API that handles most user interactions with the application. 
+The backend features an extensive API that handles most user interactions with the application. The flow of logic between each layer is structured: 
+
+Browser --> POST /api/auth/register --> Router --> Controller --> Service(s) --> Database
 
 CURRENTLY: Logout JWT authentication
 
@@ -44,3 +46,12 @@ Tasks:
 3. JWT authentication
 4. Refresh and \me endpoint
 
+### server.ts
+
+This is the main server that runs the backend, and the first point of contact the frontend accesses. The REST API calls are first forwarded by ```server.ts``` to its respective router.
+
+1. The router simply sends the request URL to its matching controller to handle. It does not include any actual business logic like JWT generation or SQL querying.
+
+2. The controller is responsible for (as titled) controlling how each HTTP request is handled. It parses and formats the request body, calls the service function, and sends an HTTP response back. The extra layer of coordination keeps things modular and less cluttered.
+
+3. The service is where all the application logic belongs. This includes JWT generation, password hashing, database insertion/retrieval, etc. By separating the actual business work from routing, this ensures that later on as the API develops more endpoints, files avoid becoming thousands of lines long.
