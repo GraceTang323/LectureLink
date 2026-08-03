@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type Response } from 'express';
 import pool from './db/pool.ts';
 import authRoutes from './routes/auth.ts';
+import profileRoutes from './routes/profile.ts';
 
 const app: Express = express();
 const port = 3000;
@@ -8,6 +9,7 @@ const port = 3000;
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 app.use('/api/auth', authRoutes); // Use the auth routes for authentication-related endpoints
+app.use('/api/profile', profileRoutes); // Use the profile routes for profile-related endpoints
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');

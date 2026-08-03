@@ -39,6 +39,10 @@ export async function register(
         );
 
         const newUser = result.rows[0];
+
+        // Insert a new profile into the database
+        await client.query('INSERT INTO profiles (user_id) VALUES ($1);', [newUser.id]);
+
         const { accessToken, refreshToken } = await createSession(client, newUser);
         await client.query('COMMIT');
 
