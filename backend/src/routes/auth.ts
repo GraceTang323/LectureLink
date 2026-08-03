@@ -23,7 +23,7 @@ router.post('/logout', async (req: Request, res: Response) => {
 })
 
 router.get('/me', async (req: Request, res: Response) => {
-    res.send('User info endpoint');
+    await authController.me(req, res);
 })
 
 // Export the router to be used in the main server file

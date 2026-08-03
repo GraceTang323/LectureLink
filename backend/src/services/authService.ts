@@ -141,7 +141,6 @@ export async function refresh(
         }
         const storedToken = result.rows[0];
         // check token is not expired and not revoked
-        // TODO: revoked token is a security level breach, implement additional message or revoke all user tokens?
         if (storedToken.expires_at < new Date() || storedToken.revoked_at !== null) {
             return {
                 status: 401,
@@ -214,6 +213,31 @@ export async function logout(
         };
     } finally {
         client.release();
+    }
+}
+
+export async function me(
+    userId: number
+) {
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE id = $1;', [userId]);
+        const user = result.rows[0];
+
+        return {
+            status: 200,
+            data: {
+                id: user.id,
+                email: user.email,
+                name: user.display_name
+            }
+        };
+
+    } catch (err) {
+        console.log(err);
+        return {
+            status: 500,
+            data: { error: err instanceof Error ? err.message : String(err) }
+        };
     }
 }
 
