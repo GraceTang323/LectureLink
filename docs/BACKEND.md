@@ -55,3 +55,26 @@ This is the main server that runs the backend, and the first point of contact th
 2. The controller is responsible for (as titled) controlling how each HTTP request is handled. It parses and formats the request body, calls the service function, and sends an HTTP response back. The extra layer of coordination keeps things modular and less cluttered.
 
 3. The service is where all the application logic belongs. This includes JWT generation, password hashing, database insertion/retrieval, etc. By separating the actual business work from routing, this ensures that later on as the API develops more endpoints, files avoid becoming thousands of lines long.
+
+### profile.ts
+
+- GET /api/profile/me
+Returns everything about the authenticated user's profile
+
+- GET /api/profile/:userId
+Returns everything public about another user's profile
+
+- PUT /api/profile/me
+Updates major, bio, graduation year
+
+- PUT /api/profile/me/photo
+Updates user photo url
+
+- PUT /api/profile/me/interests
+Updates user interests
+
+- PUT /api/profile/me/courses
+Updates user courses
+
+- PUT /api/profile/me/availability
+Updates user availability

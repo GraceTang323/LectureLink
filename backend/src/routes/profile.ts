@@ -8,16 +8,20 @@ router.get('/me', async (req: Request, res: Response) => {
     await profileController.getMe(req, res);
 });
 
+// router.get('/:<userId>', async (req: Request, res: Response) => {
+    // await profileController.getUser(req, res);
+// });
+
 router.put('/me', async (req: Request, res: Response) => {
     await profileController.putMe(req, res);
 });
 
-router.post('/me/photo', async (req: Request, res: Response) => {
-    await profileController.postMePhoto(req, res);
+router.put('/me/photo', async (req: Request, res: Response) => {
+    await profileController.putMePhoto(req, res);
 });
 
 router.put('/me/availability', async (req: Request, res: Response) => {
-    res.send('PUT User availability endpoint');
+    await profileController.putMeAvailability(req, res);
 });
 
 router.put('/me/interests', async (req: Request, res: Response) => {
@@ -29,9 +33,3 @@ router.put('/me/courses', async (req: Request, res: Response) => {
 });
 
 export default router;
-
-//   PUT    /api/profiles/me          {major, bio, graduation_year}
-//   POST   /api/profiles/me/photo    (multipart .png/.jpg)
-//   PUT    /api/profiles/me/availability
-//   PUT    /api/profiles/me/interests
-//   PUT    /api/profiles/me/classes
