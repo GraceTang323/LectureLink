@@ -6,26 +6,85 @@ import "dotenv/config";
 export async function getMe(
     userId: number
 ) {
+    const client = await pool.connect();
     try {
-        const result = await pool.query('SELECT * FROM profiles WHERE user_id = $1', [userId]);
-        if (result.rows.length === 0) {
+        await client.query('BEGIN');
+
+        const [profileResult, interestsResult, coursesResult, availabilityResult] = await Promise.all([
+            // Get core user and profile data on one row
+            client.query(`
+                SELECT p.*, u.email, u.display_name, u.photo_url
+                FROM profiles p
+                INNER JOIN users u ON p.user_id = u.id
+                WHERE p.user_id = $1
+                `, [userId]),
+            // Get interests, courses, and availability on separate rows
+            client.query(`
+                SELECT interest_id FROM user_interests WHERE user_id = $1`, [userId]),
+            client.query(`
+                SELECT course_id FROM user_courses WHERE user_id = $1`, [userId]),
+            client.query(`
+                SELECT * FROM availability WHERE user_id = $1`, [userId])
+        ]);
+
+        if (profileResult.rows.length === 0) {
             return {
                 status: 404,
                 data: { error: 'Profile not found'}
             }
         }
-        const profile = result.rows[0];
+
+        const profileData = profileResult.rows[0];
+        const interestsIds = interestsResult.rows.map(row => row.interest_id);
+        const coursesIds = coursesResult.rows.map(row => row.course_id);
+
+        // get the interest names, course names/codes, and weekdays for the IDs
+        const [interestsNamesResult, coursesNamesResult, weekdaysResult] = await Promise.all([
+            client.query('SELECT name FROM interests WHERE id = ANY($1)', [interestsIds]),
+            client.query('SELECT course_name,course_code FROM courses WHERE id = ANY($1)', [coursesIds]),
+            client.query('SELECT weekday FROM weekdays')
+        ]);
+
+        const interestsNames = interestsNamesResult.rows.map(row => row.name);
+        const weekdays = weekdaysResult.rows.map(row => row.weekday);
+
+        await client.query('COMMIT');
         return {
             status: 201,
-            data: { profile }
+            data: {
+                user: {
+                    id: profileData.user_id,
+                    email: profileData.email,
+                    display_name: profileData.display_name,
+                    photo_url: profileData.photo_url
+                },
+                profile: {
+                    major: profileData.major,
+                    bio: profileData.bio,
+                    graduation_year: profileData.graduation_year
+                },
+                courses: coursesNamesResult.rows.map(row => ({
+                    course_name: row.course_name,
+                    course_code: row.course_code
+                })),
+                interests: interestsNames,
+                availability: availabilityResult.rows.map(row => ({
+                    id: row.id,
+                    weekday: weekdays[row.user_weekday],
+                    start_time: row.start_time,
+                    end_time: row.end_time
+                }))
+            }
         };
-
     } catch (err) {
+        await client.query('ROLLBACK');
         console.log(err);
         return {
             status: 500,
             data: { error: err instanceof Error ? err.message : String(err) }
         };
+    } finally {
+        client.release();
     }
 }
 
@@ -120,6 +179,33 @@ export async function updateCourses(
             status: 201,
             data: { message: 'Courses updated successfully' }
         };
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.log(err);
+        return {
+            status: 500,
+            data: { error: err instanceof Error ? err.message : String(err) }
+        };
+    } finally {
+        client.release();
+    }
+}
+
+export async function updateAvailability(
+    userId: number,
+    weekDay: number, // assuming valid weekdays (0-6)
+    startTime: string, // assuming valid time format (HH:MI:SS)
+    endTime: string
+) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query('DELETE FROM availability WHERE user_id = $1 AND user_weekday = $2', [userId, weekDay]);
+
+        await client.query('INSERT INTO availability (user_id, user_weekday, start_time, end_time) VALUES ($1, $2, $3, $4)', [userId, weekDay, startTime, endTime]);
+
+        await client.query('COMMIT');
+
     } catch (err) {
         await client.query('ROLLBACK');
         console.log(err);

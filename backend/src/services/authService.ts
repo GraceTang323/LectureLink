@@ -12,7 +12,7 @@ export async function register(
 ) {
     if (!email || !password || !displayName) {
         return {
-            status: 400,
+            status: 401,
             data: { error: 'Missing required fields' }
         };
     }
@@ -20,7 +20,7 @@ export async function register(
     const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
         return {
-            status: 400,
+            status: 402,
             data: { error: 'Email already registered' }
         };
     }
@@ -69,7 +69,7 @@ export async function login(
     // validate input
     if (!email || !password) {
         return {
-            status: 500,
+            status: 401,
             data: { error: 'Missing required fields' }
         }
     }
@@ -81,7 +81,7 @@ export async function login(
         const result = await client.query('SELECT * from users WHERE email = ($1);', [email]);
         if (result.rowCount === 0) {
             return {
-                status: 401,
+                status: 402,
                 data: { error: 'Invalid email' }
             };
         }
@@ -91,7 +91,7 @@ export async function login(
 
         if (!isValid) {
             return {
-                status: 401,
+                status: 403,
                 data: { error: 'Invalid password' }
             };
         }

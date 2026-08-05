@@ -31,7 +31,7 @@ export async function putMe(req: Request, res: Response) {
     }
 }
 
-export async function postMePhoto(req: Request, res: Response) {
+export async function putMePhoto(req: Request, res: Response) {
     try {
         const userId = await authorizeRequest(req, res);
         if (!userId) return;
@@ -75,6 +75,35 @@ export async function putMeCourses(req: Request, res: Response) {
         }
         await profileService.updateCourses(userId, courses);
         res.status(201).json({ message: 'Courses updated successfully' });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export async function putMeAvailability(req: Request, res: Response) {
+    try {
+        const userId = await authorizeRequest(req, res);
+        if (!userId) return;
+
+        const { weekDay, startTime, endTime } = req.body;
+        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/; // Matches HH:MM:SS format
+
+        if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+            return res.status(401).json({ error: 'Invalid time format. Use HH:MM:SS format.' });
+        }
+
+        if (startTime >= endTime) {
+            return res.status(402).json({ error: 'Start time must be before end time.' });
+        }
+
+        if (weekDay < 0 || weekDay > 6) {
+            return res.status(403).json({ error: 'Invalid week day. Use 0 for Sunday through 6 for Saturday.' });
+        }
+
+        await profileService.updateAvailability(userId, weekDay, startTime, endTime);
+        res.status(201).json({ message: 'Availability updated successfully' });
 
     } catch (err) {
         console.error(err);
