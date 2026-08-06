@@ -1,16 +1,15 @@
 import { Router, type Request, type Response } from 'express';
 import * as profileController from '../controllers/profileController.ts';
-import { profile } from 'node:console';
 
 const router = Router();
 
 router.get('/me', async (req: Request, res: Response) => {
-    await profileController.getMe(req, res);
+    await profileController.getMyProfile(req, res);
 });
 
-// router.get('/:<userId>', async (req: Request, res: Response) => {
-    // await profileController.getUser(req, res);
-// });
+router.get('/:userId', async (req: Request, res: Response) => {
+    await profileController.getOtherProfile(req, res);
+});
 
 router.put('/me', async (req: Request, res: Response) => {
     await profileController.putMe(req, res);
@@ -22,6 +21,10 @@ router.put('/me/photo', async (req: Request, res: Response) => {
 
 router.put('/me/availability', async (req: Request, res: Response) => {
     await profileController.putMeAvailability(req, res);
+});
+
+router.delete('/me/availability', async (req: Request, res: Response) => {
+    await profileController.deleteMeAvailability(req, res);
 });
 
 router.put('/me/interests', async (req: Request, res: Response) => {

@@ -2,12 +2,31 @@ import { type Request, type Response } from 'express';
 import jwt from 'jsonwebtoken';
 import * as profileService from '../services/profileService.ts';
 
-export async function getMe(req: Request, res: Response) {
+export async function getMyProfile(req: Request, res: Response) {
     try {
         const userId = await authorizeRequest(req, res);
         if (!userId) return;
 
-        const result = await profileService.getMe(userId);
+        const result = await profileService.getUser(userId);
+        res.status(result.status).json(result.data);
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export async function getOtherProfile(req: Request, res: Response) {
+    try {
+        const requesterId = await authorizeRequest(req, res);
+        if (!requesterId) return;
+        
+        const userId = Number(req.params.userId);
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId in request body' });
+        }
+
+        const result = await profileService.getUser(userId);
         res.status(result.status).json(result.data);
 
     } catch (err) {
@@ -105,6 +124,25 @@ export async function putMeAvailability(req: Request, res: Response) {
         await profileService.updateAvailability(userId, weekDay, startTime, endTime);
         res.status(201).json({ message: 'Availability updated successfully' });
 
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export async function deleteMeAvailability(req: Request, res: Response) {
+    try {
+        const userId = await authorizeRequest(req, res);
+        if (!userId) return;
+
+        const { weekDay } = req.body;
+        if (weekDay < 0 || weekDay > 6) {
+            return res.status(401).json({ error: 'Invalid week day. Use 0 for Sunday through 6 for Saturday.' });
+        }
+
+        await profileService.deleteAvailability(userId, weekDay);
+        res.status(201).json({ message: 'Availability deleted successfully' });
+        
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Internal server error' });

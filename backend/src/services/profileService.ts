@@ -1,9 +1,7 @@
-import jwt from 'jsonwebtoken';
 import pool from '../db/pool.ts';
-import type { PoolClient } from 'pg';
 import "dotenv/config";
 
-export async function getMe(
+export async function getUser(
     userId: number
 ) {
     const client = await pool.connect();
@@ -215,5 +213,24 @@ export async function updateAvailability(
         };
     } finally {
         client.release();
+    }
+}
+
+export async function deleteAvailability(
+    userId: number,
+    weekDay: number // assuming valid weekdays (0-6)
+) {
+    try {
+        await pool.query('DELETE FROM availability WHERE user_id = $1 AND user_weekday = $2', [userId, weekDay]);
+        return {
+            status: 201,
+            data: { message: 'Availability deleted successfully' }
+        };
+    } catch (err) {
+        console.log(err);
+        return {
+            status: 500,
+            data: { error: err instanceof Error ? err.message : String(err) }
+        };
     }
 }
