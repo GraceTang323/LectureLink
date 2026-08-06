@@ -268,7 +268,7 @@ async function createSession(
     // generate access token
     const payload = { id: user.id, email: user.email };
     const secretKey = process.env.JWT_SECRET;
-    const accessToken = jwt.sign(payload, secretKey as string, { expiresIn: '30m' });
+    const accessToken = jwt.sign(payload, secretKey as string, { expiresIn: '60m' });
 
     return { refreshToken, accessToken };
 }

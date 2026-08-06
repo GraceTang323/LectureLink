@@ -78,3 +78,6 @@ Updates user courses
 
 - PUT /api/profile/me/availability
 Updates user availability
+
+- DELETE /api/profile/me/availability
+Removes an availability for the user 
