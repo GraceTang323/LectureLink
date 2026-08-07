@@ -26,6 +26,7 @@ export async function getUser(
         ]);
 
         if (profileResult.rows.length === 0) {
+            await client.query('COMMIT');
             return {
                 status: 404,
                 data: { error: 'Profile not found'}

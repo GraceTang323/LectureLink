@@ -1,6 +1,6 @@
 import { type Request, type Response } from 'express';
-import jwt from 'jsonwebtoken';
 import * as profileService from '../services/profileService.ts';
+import { authorizeRequest } from '../util/authorize.ts';
 
 export async function getMyProfile(req: Request, res: Response) {
     try {
@@ -146,30 +146,5 @@ export async function deleteMeAvailability(req: Request, res: Response) {
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Internal server error' });
-    }
-}
-
-async function authorizeRequest(req: Request, res: Response): Promise<number | null> {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) {
-        res.status(401).json({ error: 'Unauthorized' });
-        return null;
-    }
-
-    try {
-        const decodedPayload = jwt.verify(token, process.env.JWT_SECRET as string) as { id: number };
-        const userId = decodedPayload.id;
-
-        if (!userId) {
-            res.status(403).json({ error: 'Forbidden' });
-            return null;
-        }
-        return userId;
-
-    } catch (error) {
-        console.error('Token verification failed:', error);
-        res.status(401).json({ error: 'Unauthorized' });
-        return null;
     }
 }

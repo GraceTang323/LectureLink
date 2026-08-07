@@ -81,3 +81,20 @@ Updates user availability
 
 - DELETE /api/profile/me/availability
 Removes an availability for the user 
+
+### match.ts
+
+- POST /api/likes/:userId
+Inserts the like, detects a reciprocal like, and creates a match if true
+
+- DELETE /api/likes/:userId
+Removes the user's like. If already matched, match still exists
+
+- GET /api/matches/me
+Returns all matches under the current user
+
+- GET /api/matches/me/:matchId
+Returns a specific match under the current user
+
+- DELETE /api/matches/me/:matchId
+Removes a specific match under the current user. Also simultaneously removes the user's like to the other.
