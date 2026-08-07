@@ -87,13 +87,16 @@ Removes an availability for the user
 - POST /api/likes/:userId
 Inserts the like, detects a reciprocal like, and creates a match if true
 
+- POST /api/likes/me
+Returns all likes from the current user
+
 - DELETE /api/likes/:userId
 Removes the user's like. If already matched, match still exists
 
-- GET /api/matches/me
+- GET /api/likes/matches/me
 Returns all matches under the current user
 
-- GET /api/matches/me/:matchId
+- GET /api/likes/matches/me/:matchId
 Returns a specific match under the current user
 
 - DELETE /api/matches/me/:matchId

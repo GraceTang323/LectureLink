@@ -135,15 +135,63 @@ export async function showLikes(
     userId: number
 ) {
     try {
-        const likerResult = await pool.query('SELECT liked_id FROM likes WHERE liker_id = $1', [userId]);
-        if (likerResult.rowCount === 0) {
+        // join on the liked user to get the corresponding user's info
+        // left join to ensure users with incomplete profiles are still included
+        const result = await pool.query(`
+            SELECT l.created_at, u.display_name, u.photo_url, p.major, p.graduation_year
+            FROM likes l
+            JOIN users u ON l.liked_id = u.id
+            LEFT JOIN profiles p ON p.user_id = u.id
+            WHERE l.liker_id = $1
+            ORDER BY l.created_at DESC
+            `, [userId]);
+        if (result.rowCount === 0) {
             return {
                 status: 200,
-                data: { message: "No likes found" }
+                data: { likes: [] }
             }
         }
-        const likerIds = likerResult.rows[0];
-        const likerData = await pool.query('SELECT * FROM ')
+        
+        return {
+            status: 200,
+            data: { likes: result.rows }
+        };
+    } catch (err) {
+        console.log(err);
+        return {
+            status: 500,
+            data: { error: err instanceof Error ? err.message : String(err) }
+        };
+    }
+}
+
+export async function showMatches(
+    userId: number
+) {
+    try {
+        // check that userId is either user_low or user_high
+        const result = await pool.query(`
+            SELECT m.id, m.matched_at, m.is_active, u.display_name
+            FROM matches m
+            JOIN users u
+            ON u.id = CASE
+                WHEN m.user_low = $1 THEN m.user_high
+                ELSE m.user_low
+            END
+            WHERE $1 IN (m.user_low, m.user_high)
+            ORDER BY m.matched_at DESC
+            `, [userId]);
+
+        if (result.rowCount === 0) {
+            return {
+                status: 200,
+                data: { matches: [] }
+            }
+        }
+        return {
+            status: 200,
+            data: { matches: result.rows }
+        };
     } catch (err) {
         console.log(err);
         return {
