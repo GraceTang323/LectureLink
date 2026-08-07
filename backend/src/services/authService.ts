@@ -80,6 +80,7 @@ export async function login(
         // fetch user by email
         const result = await client.query('SELECT * from users WHERE email = ($1);', [email]);
         if (result.rowCount === 0) {
+            await client.query('COMMIT');
             return {
                 status: 402,
                 data: { error: 'Invalid email' }
@@ -90,6 +91,7 @@ export async function login(
         const isValid = await bcrypt.compare(password, user.password_hash);
 
         if (!isValid) {
+            await client.query('COMMIT');
             return {
                 status: 403,
                 data: { error: 'Invalid password' }
@@ -138,6 +140,7 @@ export async function refresh(
         );
         // check token exists in database
         if (result.rowCount === 0) {
+            await client.query('COMMIT');
             return {
                 status: 401,
                 data: { error: 'Invalid refresh token' }
@@ -146,6 +149,7 @@ export async function refresh(
         const storedToken = result.rows[0];
         // check token is not expired and not revoked
         if (storedToken.expires_at < new Date() || storedToken.revoked_at !== null) {
+            await client.query('COMMIT');
             return {
                 status: 401,
                 data: { error: 'Expired or Revoked refresh token' }
