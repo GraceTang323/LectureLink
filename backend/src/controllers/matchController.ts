@@ -24,19 +24,6 @@ export async function likeUser(req: Request, res: Response) {
     }
 }
 
-export async function showAllLikes(req: Request, res: Response) {
-    try {
-        const userId = await authorizeRequest(req, res);
-        if (!userId) return;
-
-        // const result = await matchService.showLikes(userId);
-        // res.status(result.status).json(result.data);
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-}
-
 export async function unlikeUser(req: Request, res: Response) {
     try {
         const targetUserId = Number(req.params.userId);
@@ -59,8 +46,30 @@ export async function unlikeUser(req: Request, res: Response) {
     }
 }
 
-export async function showAllMatches(req: Request, res: Response) {
+export async function showAllLikes(req: Request, res: Response) {
+    try {
+        const userId = await authorizeRequest(req, res);
+        if (!userId) return;
 
+        const result = await matchService.showLikes(userId);
+        res.status(result.status).json(result.data);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export async function showAllMatches(req: Request, res: Response) {
+    try {
+        const userId = await authorizeRequest(req, res);
+        if (!userId) return;
+
+        const result = await matchService.showMatches(userId);
+        res.status(result.status).json(result.data);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 }
 
 export async function showMatch(req: Request, res: Response) {
