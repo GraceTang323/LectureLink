@@ -73,9 +73,37 @@ export async function showAllMatches(req: Request, res: Response) {
 }
 
 export async function showMatch(req: Request, res: Response) {
+    try {
+        const targetMatchId = Number(req.params.matchId);
+        if (!targetMatchId) {
+            return res.status(400).json({ error: 'Missing userId in request body' });
+        }
 
+        const userId = await authorizeRequest(req, res);
+        if (!userId) return;
+
+        const result = await matchService.showOneMatch(userId, targetMatchId);
+        res.status(result.status).json(result.data);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 }
 
 export async function deleteMatch(req: Request, res: Response) {
+    try {
+        const targetMatchId = Number(req.params.matchId);
+        if (!targetMatchId) {
+            return res.status(400).json({ error: 'Missing userId in request body' });
+        }
 
+        const userId = await authorizeRequest(req, res);
+        if (!userId) return;
+
+        const result = await matchService.deleteMatch(userId, targetMatchId);
+        res.status(result.status).json(result.data);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 }
