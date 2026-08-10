@@ -91,7 +91,7 @@ Inserts the like, detects a reciprocal like, and creates a match if true
 Returns all likes from the current user
 
 - DELETE /api/likes/:userId
-Removes the user's like. If already matched, match still exists
+Removes the user's like on the given user id. If already matched, match still exists
 
 - GET /api/likes/matches/me
 Returns all matches under the current user
@@ -99,5 +99,5 @@ Returns all matches under the current user
 - GET /api/likes/matches/me/:matchId
 Returns a specific match under the current user
 
-- DELETE /api/matches/me/:matchId
-Removes a specific match under the current user. Also simultaneously removes the user's like to the other.
+- DELETE /api/likes/matches/me/:matchId
+Removes a specific match under the current user. Also simultaneously removes any subsequent likes between both users.

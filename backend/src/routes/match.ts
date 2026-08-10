@@ -11,12 +11,12 @@ router.get('/me', async (req: Request, res: Response) => {
     await matchController.showAllLikes(req, res);
 });
 
-router.delete('/matches/:userId', async (req: Request, res: Response) => {
+router.delete('/:userId', async (req: Request, res: Response) => {
     await matchController.unlikeUser(req, res);
 });
 
 router.get('/matches/me', async (req: Request, res: Response) => {
-    await matchController.showAllMatches(req, res); // check userId == either user_low or user_high
+    await matchController.showAllMatches(req, res);
 });
 
 router.get('/matches/me/:matchId', async (req: Request, res: Response) => {

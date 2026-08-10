@@ -200,3 +200,88 @@ export async function showMatches(
         };
     }
 }
+
+export async function showOneMatch(
+    userId: number,
+    targetMatchId: number
+) {
+    try {
+        const result = await pool.query(`
+            SELECT m.id, m.matched_at, m.is_active, u.display_name
+            FROM matches m
+            JOIN users u
+            ON u.id = CASE
+                WHEN m.user_low = $1 THEN m.user_high
+                ELSE m.user_low
+            END
+            WHERE $1 IN (m.user_low, m.user_high) AND m.id = $2
+            `, [userId, targetMatchId]);
+            
+        if (result.rowCount === 0) {
+            return {
+                status: 404,
+                data: { error: "Match not found." }
+            }
+        }
+        const data = result.rows[0];
+        return {
+            status: 200,
+            data: { match: data }
+        };
+    } catch (err) {
+        console.log(err);
+        return {
+            status: 500,
+            data: { error: err instanceof Error ? err.message : String(err) }
+        };
+    }
+}
+
+export async function deleteMatch(
+    userId: number,
+    targetMatchId: number
+) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        // delete the match
+        // checking userId ensures the user actually owns the match being deleted
+        const result = await client.query(`
+            DELETE FROM matches
+            WHERE $1 IN (user_low, user_high) AND id = $2
+            RETURNING user_low, user_high
+            `, [userId, targetMatchId]);
+            
+        if (result.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return {
+                status: 404,
+                data: { error: "Match not found." }
+            }
+        }
+        const { user_low, user_high } = result.rows[0];
+        const targetUserId = user_low === userId ? user_high : user_low;
+
+        // delete any subsequent likes as well
+        await client.query(`
+            DELETE FROM likes
+            WHERE (liker_id = $1 AND liked_id = $2)
+                OR (liker_id = $2 AND liked_id = $1)
+            `, [userId, targetUserId]);
+        
+        await client.query('COMMIT');
+        return {
+            status: 200,
+            data: { message: `Successfully deleted match ${targetMatchId} between users ${userId} and ${targetUserId}` }
+        };
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.log(err);
+        return {
+            status: 500,
+            data: { error: err instanceof Error ? err.message : String(err) }
+        };
+    } finally {
+        client.release();
+    }
+}
