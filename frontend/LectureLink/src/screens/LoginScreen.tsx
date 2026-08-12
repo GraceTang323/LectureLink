@@ -1,11 +1,13 @@
 import { Alert, StyleSheet, Text, View } from 'react-native'
 import React, { useState } from 'react'
+import { useRouter, Link } from 'expo-router';
 import InputField from '@/src/forms/InputField'
 import LoginButton from '@/src/components/Buttons'
 
 const LoginScreen = () => {
     const [ email, setEmail ] = useState('');
     const [ password, setPassword ] = useState('');
+    const router = useRouter();
 
     return (
         <View style={styles.container}>
@@ -30,10 +32,12 @@ const LoginScreen = () => {
 
             <LoginButton
                 value="Log In"
-                handlePress={() => Alert.alert("Button pressed")}
+                handlePress={() => router.push('/home')}
             />
-
-            <Text style={{padding: 12}}>Don't have an account? Register now!</Text>
+            <View style={{flexDirection: 'row'}}>
+                <Text style={{marginVertical: 12, marginLeft: 12}}>Don't have an account?</Text>
+                <Link href = "/register" style={{marginVertical: 12, marginLeft: 5, color: "#2063ff"}}>Register Now!</Link>
+            </View>
         </View>
     )
 }
@@ -54,5 +58,7 @@ const styles = StyleSheet.create({
     },
     container: {
         paddingHorizontal: 16,
+        flex: 1,
+        justifyContent: 'center',
     }
 })
