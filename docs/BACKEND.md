@@ -7,20 +7,27 @@ The backend comprises of several moving components. As of now, it consists of an
 
 ```md
 src/
-├── controllers/
+│
+├── controllers/                     ← MIDDLEWARE
 │   └── authController.ts
-├── db/
+│
+├── db/                              ← STORAGE
 │   ├── migrate.ts
 │   ├── migrations/
 │   │   ├── 001_create_users.sql
 │   │   ├── 002_create_interests_and_courses.sql
-│   │   ├──...
+│   │   └──...
+│   │
 │   └── pool.ts
-├── routes/
+│
+├── routes/                          ← API ROUTING
 │   └── auth.ts
+│
 ├── server.ts
-├── services/
+│
+├── services/                         ← API LOGIC
 │   └── authService.ts
+│
 └── util/
 ```
 
