@@ -31,6 +31,7 @@ const InputField = ({
       )}
       <TextInput
         style={styles.input}
+        autoCapitalize="none"
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}

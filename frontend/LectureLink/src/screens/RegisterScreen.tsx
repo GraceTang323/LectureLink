@@ -1,7 +1,7 @@
 import { Alert, StyleSheet, Text, View } from 'react-native'
 import React, { useState } from 'react'
 import { useRouter, Link } from 'expo-router';
-import InputField from '@/src/forms/InputField'
+import InputField from '@/src/components/forms/InputField'
 import LoginButton from '@/src/components/Buttons'
 
 const RegisterScreen = () => {
