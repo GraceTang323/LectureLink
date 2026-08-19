@@ -3,11 +3,14 @@ import React, { useState } from 'react'
 import { useRouter, Link } from 'expo-router';
 import InputField from '@/src/components/forms/InputField'
 import LoginButton from '@/src/components/Buttons'
+import { useAuth } from '@/src/hooks/useAuth';
 
 const RegisterScreen = () => {
     const [ email, setEmail ] = useState('');
     const [ password, setPassword ] = useState('');
+    const [ confirmPassword, setConfirmPassword ] = useState('');
     const router = useRouter();
+    const { onRegister } = useAuth();
 
     return (
         <View style={styles.container}>
@@ -34,14 +37,22 @@ const RegisterScreen = () => {
             <InputField
             icon="lock-closed"
             placeholder="Confirm password"
-            value={password}
+            value={confirmPassword}
             secureTextEntry={true}
-            onChangeText={setPassword}
+            onChangeText={setConfirmPassword}
             />
 
             <LoginButton
                 value="Sign Up"
-                handlePress={() => router.push('/home')}
+                handlePress={ async () => {
+                    const result = await onRegister(email, password, confirmPassword);
+
+                    if (result?.error) {
+                        Alert.alert("Oops, something went wrong", result.message);
+                        return;
+                    }
+                    router.push('/home');
+                }}
             />
 
             <View style={{flexDirection: 'row'}}>

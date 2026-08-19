@@ -1,6 +1,7 @@
 import { type Request, type Response } from 'express';
 import jwt from 'jsonwebtoken';
 import * as authService from '../services/authService.ts';
+import { authorizeRequest } from '../util/authorize.ts';
 
 export async function register(req: Request, res: Response) {
     try {
@@ -59,23 +60,11 @@ export async function logout(req: Request, res: Response) {
 
 export async function me(req: Request, res: Response) {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1]; // splits "Bearer" from token
-        if (!token) {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
+        const userId = await authorizeRequest(req, res);
+        if (!userId) return;
 
-        // verify token and extract userId from it
-        jwt.verify(token, process.env.JWT_SECRET as string, async (err, decodedPayload) => {
-            if (err) {
-                return res.status(403).json({ error: 'Forbidden' });
-            }
-
-            const userId = (decodedPayload as { id: number }).id;
-            const result = await authService.me(userId);
-
-            res.status(result.status).json(result.data);
-        });
+        const result = await authService.me(userId);
+        res.status(result.status).json(result.data);
 
     } catch (err) {
         console.error(err);
