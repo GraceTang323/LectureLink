@@ -2,11 +2,11 @@ import { Alert, Text, View, StyleSheet } from 'react-native';
 import { useContext } from 'react';
 import { useRouter } from 'expo-router';
 import LoginButton from '@/src/components/Buttons';
-import { AuthContext } from '@/src/context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const HomeScreen = () => {
     const router = useRouter();
-    const { onLogout } = useContext(AuthContext);
+    const { onLogout } = useAuth();
 
     return (
         <View style = {styles.container}>

@@ -3,13 +3,13 @@ import React, { useState, useContext } from 'react'
 import { useRouter, Link } from 'expo-router';
 import InputField from '@/src/components/forms/InputField'
 import LoginButton from '@/src/components/Buttons'
-import { AuthContext } from '@/src/context/AuthContext';
+import { useAuth } from '@/src/hooks/useAuth';
 
 const LoginScreen = () => {
     const [ email, setEmail ] = useState('');
     const [ password, setPassword ] = useState('');
     const router = useRouter();
-    const { onLogin } = useContext(AuthContext);
+    const { onLogin } = useAuth();
 
     return (
         <View style={styles.container}>
@@ -36,6 +36,7 @@ const LoginScreen = () => {
                 value="Log In"
                 handlePress={async () => {
                     const result = await onLogin(email, password);
+                    
                     if (result?.error) {
                         Alert.alert('Login failed', result.message);
                         return;

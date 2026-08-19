@@ -5,6 +5,8 @@ import crypto from 'crypto';
 import type { PoolClient } from 'pg';
 import "dotenv/config";
 
+const TRIM_NUMBER = 10;
+
 export async function register(
     email: string, 
     password: string, 
@@ -131,6 +133,17 @@ export async function refresh(
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+
+        // check table size, trim if necessary
+        const rowCount = await client.query(`
+            SELECT COUNT(*) FROM refresh_tokens 
+            WHERE revoked_at IS NOT NULL 
+            OR expires_at < NOW();
+        `);
+        if (rowCount.rows[0] > TRIM_NUMBER) {
+            await client.query('DELETE FROM refresh_tokens WHERE revoked_at IS NOT NULL OR expires_at < NOW();');
+        }
+
         // get refresh token hash
         const refreshHash = hashToken(incomingRefreshToken);
 
