@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import type { PoolClient } from 'pg';
 import "dotenv/config";
 
-const TRIM_NUMBER = 10;
+const TRIM_NUMBER = 20;
 
 export async function register(
     email: string, 

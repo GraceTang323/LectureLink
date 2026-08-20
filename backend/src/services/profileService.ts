@@ -89,20 +89,28 @@ export async function getUser(
 
 export async function updateProfile(
     userId: number, 
+    display_name: string,
     major: string, 
     bio: string, 
     graduation_year: number
 ) {
+    const client = await pool.connect();
     try {
-        await pool.query('UPDATE profiles SET major = $1, bio = $2, graduation_year = $3 WHERE user_id = $4',
+        await client.query('BEGIN');
+        await client.query('UPDATE profiles SET major = $1, bio = $2, graduation_year = $3 WHERE user_id = $4',
             [major, bio, graduation_year, userId]
         );
+        await client.query('UPDATE users SET display_name = $1 WHERE id = $2', [display_name, userId]);
+        await client.query('COMMIT');
     } catch (err) {
+        await client.query('ROLLBACK');
         console.log(err);
         return {
             status: 500,
             data: { error: err instanceof Error ? err.message : String(err) }
         };
+    } finally {
+        client.release();
     }
 }
 

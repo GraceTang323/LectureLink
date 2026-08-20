@@ -78,16 +78,15 @@ export const AuthProvider = ({children}: any) => {
     }, []);
 
     const register = async (email: string, password: string, confirmPassword: string) => {
-
-        if (email.length === 0 || password.length === 0) {
-            throw new Error("Missing one or more fields");
-        }
-        if (password !== confirmPassword) {
-            throw new Error("Passwords must match");
-        }
-        const displayName = email.split('@')[0]; // set default displayName as email header until changed
-
         try {
+            if (email.length === 0 || password.length === 0) {
+                throw new Error("Missing one or more fields");
+            }
+            if (password !== confirmPassword) {
+                throw new Error("Passwords must match");
+            }
+            const displayName = email.split('@')[0]; // set default displayName as email header until changed
+
             const response = await fetch(`${API_URL}/auth/register`, { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

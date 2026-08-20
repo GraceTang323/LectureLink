@@ -51,13 +51,13 @@ const RegisterScreen = () => {
                         Alert.alert("Oops, something went wrong", result.message);
                         return;
                     }
-                    router.push('/home');
+                    router.push('/profile');
                 }}
             />
 
             <View style={{flexDirection: 'row'}}>
                 <Text style={{marginVertical: 12, marginLeft: 12}}>Already have an account?</Text>
-                <Link href = "/" style={{marginVertical: 12, marginLeft: 5, color: "#2063ff"}}>Log In</Link>
+                <Link href = ".." style={{marginVertical: 12, marginLeft: 5, color: "#2063ff"}}>Log In</Link>
             </View>
         </View>
     )

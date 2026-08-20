@@ -1,8 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
-import { useAuth } from '../hooks/useAuth';
 
 const API_URL = `http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3000/api`;
-const { onRefresh } = useAuth();
 
 export async function apiFetch(
     endpoint: string,
@@ -28,7 +26,7 @@ export async function apiFetch(
         if (!refreshToken) {
             throw new Error("No refresh token available");
         }
-        const newToken = await onRefresh(refreshToken);
+        const newToken = await refresh(refreshToken);
 
         return apiFetch(endpoint, options, newToken, true);
     }
@@ -37,4 +35,31 @@ export async function apiFetch(
     }
 
     return data;
+}
+
+async function refresh(
+    refreshToken: string
+) {
+    try {
+        const response = await fetch(`${API_URL}/auth/refresh`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error("Refresh failed");
+        }
+
+        await SecureStore.setItemAsync('accessToken', data.accessToken);
+        await SecureStore.setItemAsync('refreshToken', data.refreshToken);
+
+        return data.accessToken;
+
+    } catch (err) {
+        console.error(err);
+        return { error: true, message: err instanceof Error ? err.message : "Refresh failed" };
+    }
 }
