@@ -40,8 +40,8 @@ export async function putMe(req: Request, res: Response) {
         const userId = await authorizeRequest(req, res);
         if (!userId) return;
 
-        const { major, bio, graduation_year } = req.body;
-        await profileService.updateProfile(userId, major, bio, graduation_year);
+        const { display_name, major, bio, graduation_year } = req.body;
+        await profileService.updateProfile(userId, display_name, major, bio, graduation_year);
         res.status(201).json({ message: 'Profile updated successfully' });
 
     } catch (err) {
