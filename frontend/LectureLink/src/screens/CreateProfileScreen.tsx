@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { useRouter } from 'expo-router';
 import * as profileService from '@/src/services/profile';
 import { useAuth } from "../hooks/useAuth";
 
@@ -10,8 +9,7 @@ const CreateProfileScreen = () => {
     const [gradDate, setGradDate] = useState("");
     const [bio, setBio] = useState("");
 
-    const { authState } = useAuth();
-    const router = useRouter();
+    const { authState, completeProfile } = useAuth();
 
     const handleCreateProfile = async () => {
         if (!username || !major || !gradDate) {
@@ -22,22 +20,28 @@ const CreateProfileScreen = () => {
             return;
         }
 
-        await profileService.initializeProfile(
-            username.trim(), 
-            major, 
-            Number(gradDate), 
-            authState.token,
-            bio.trim(),
-        );
-        Alert.alert("Successfully created profile", "Welcome! Get started by adding some interests and courses")
-        router.push('/home');
+        try {
+            await profileService.initializeProfile(
+                username.trim(), 
+                major, 
+                Number(gradDate), 
+                authState.token,
+                bio.trim(),
+            );
 
-        console.log({
-            username,
-            major,
-            gradDate,
-            bio,
-        });
+            completeProfile();
+
+            Alert.alert("Successfully created profile", "Welcome! Get started by adding some interests and courses");
+            
+            console.log({
+                username,
+                major,
+                gradDate,
+                bio,
+            });
+        } catch (err) {
+            Alert.alert("Profile creation failed", err instanceof Error ? err.message : "Something went wrong");
+        };
     };
 
     return (

@@ -1,10 +1,10 @@
 import { createContext, useEffect, useState } from 'react';
-import { apiFetch } from '../services/api'
 import * as SecureStore from 'expo-secure-store';
 
 interface AuthState {
     token: string | null;
     authenticated: boolean | null;
+    profileComplete: boolean;
     loading: boolean;
 }
 
@@ -14,6 +14,7 @@ interface AuthProps {
     onLogin: (email: string, password: string) => Promise<any>;
     onLogout: () => Promise<any>;
     onRefresh: (refreshToken: string) => Promise<any>;
+    completeProfile: () => void;
 }
 
 const IP_ADDRESS = process.env.EXPO_PUBLIC_IP_ADDRESS;
@@ -23,12 +24,14 @@ export const AuthContext = createContext<AuthProps>({
     authState: {
         token: null,
         authenticated: null,
+        profileComplete: false,
         loading: true,
     },
     onRegister: async () => {},
     onLogin: async () => {},
     onLogout: async () => {},
     onRefresh: async () => {},
+    completeProfile: () => {},
 });
 
 // need to handle login, register, logout, and refresh
@@ -36,10 +39,12 @@ export const AuthProvider = ({children}: any) => {
     const [authState, setAuthState] = useState<{
         token: string | null;
         authenticated: boolean | null;
+        profileComplete: boolean;
         loading: boolean;
     }>({
         token: null,
         authenticated: null,
+        profileComplete: false,
         loading: true,
     });
 
@@ -55,6 +60,7 @@ export const AuthProvider = ({children}: any) => {
                     setAuthState({
                         token: newToken,
                         authenticated: true,
+                        profileComplete: authState.profileComplete,
                         loading: false,
                     });
                 } else {
@@ -62,6 +68,7 @@ export const AuthProvider = ({children}: any) => {
                     setAuthState({
                         token: null,
                         authenticated: false,
+                        profileComplete: authState.profileComplete, // TODO fix?
                         loading: false,
                     });
                 }
@@ -70,12 +77,21 @@ export const AuthProvider = ({children}: any) => {
                 setAuthState({
                     token: null,
                     authenticated: false,
+                    profileComplete: authState.profileComplete,
                     loading: false,
                 });
             }
         };
         restoreSession();
     }, []);
+
+    useEffect(() => {
+        console.log("AUTH STATE CHANGED:", {
+            authenticated: authState.authenticated,
+            profileStatus: authState.profileComplete,
+            loading: authState.loading,
+        });
+    }, [authState]);
 
     const register = async (email: string, password: string, confirmPassword: string) => {
         try {
@@ -105,6 +121,7 @@ export const AuthProvider = ({children}: any) => {
             setAuthState({
                 token: data.accessToken,
                 authenticated: true,
+                profileComplete: false,
                 loading: false
             });
 
@@ -136,6 +153,7 @@ export const AuthProvider = ({children}: any) => {
             setAuthState({
                 token: data.accessToken,
                 authenticated: true,
+                profileComplete: authState.profileComplete,
                 loading: false
             });
 
@@ -148,26 +166,27 @@ export const AuthProvider = ({children}: any) => {
 
     const logout = async () => {
         try {
-            const refreshToken = SecureStore.getItem('refreshToken');
+            const refreshToken = await SecureStore.getItemAsync('refreshToken');
 
-            if (!refreshToken) {
-                throw new Error("Error retrieving refresh token from secure store");
-            }
-            const response = await fetch(`${API_URL}/auth/logout`, { 
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refreshToken })
-            });
+            if (refreshToken) { // refresh token exists, call backend endpoint first
+                const response = await fetch(`${API_URL}/auth/logout`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken })
+                });
             
-            if (!response.ok) {
-                throw new Error("Logout failed");
+                if (!response.ok) {
+                    throw new Error("Logout failed");
+                }
             }
+            
             await SecureStore.deleteItemAsync('accessToken');
             await SecureStore.deleteItemAsync('refreshToken');
 
             setAuthState({
                 token: null,
                 authenticated: false,
+                profileComplete: authState.profileComplete,
                 loading: false,
             });
 
@@ -204,12 +223,21 @@ export const AuthProvider = ({children}: any) => {
         }
     }
 
+
+    const completeProfile = () => {
+        setAuthState(prev => ({
+            ...prev,
+            profileComplete: true,
+        }));
+    };
+
     const value = {
         authState: authState,
         onRegister: register,
         onLogin: login,
         onLogout: logout,
         onRefresh: refresh,
+        completeProfile,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
