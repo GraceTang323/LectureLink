@@ -1,5 +1,5 @@
 import { Alert, StyleSheet, Text, View } from 'react-native'
-import React, { useState, useContext } from 'react'
+import React, { useState } from 'react'
 import { useRouter, Link } from 'expo-router';
 import InputField from '@/src/components/forms/InputField'
 import LoginButton from '@/src/components/Buttons'
@@ -10,6 +10,15 @@ const LoginScreen = () => {
     const [ password, setPassword ] = useState('');
     const router = useRouter();
     const { onLogin } = useAuth();
+
+    const handleLogin = async () => {
+        const result = await onLogin(email, password);
+                    
+        if (result?.error) {
+            Alert.alert('Login failed', result.message);
+            return;
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -34,15 +43,7 @@ const LoginScreen = () => {
 
             <LoginButton
                 value="Log In"
-                handlePress={async () => {
-                    const result = await onLogin(email, password);
-                    
-                    if (result?.error) {
-                        Alert.alert('Login failed', result.message);
-                        return;
-                    }
-                    router.push('/home');
-                }}
+                handlePress={handleLogin}
             />
             <View style={{flexDirection: 'row'}}>
                 <Text style={{marginVertical: 12, marginLeft: 12}}>Don't have an account?</Text>

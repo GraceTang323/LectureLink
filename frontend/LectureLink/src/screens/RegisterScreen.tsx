@@ -12,6 +12,15 @@ const RegisterScreen = () => {
     const router = useRouter();
     const { onRegister } = useAuth();
 
+    const handleRegister = async () => {
+        const result = await onRegister(email, password, confirmPassword);
+
+        if (result?.error) {
+            Alert.alert("Oops, something went wrong", result.message);
+            return;
+        }
+    }
+
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Register</Text>
@@ -44,15 +53,7 @@ const RegisterScreen = () => {
 
             <LoginButton
                 value="Sign Up"
-                handlePress={ async () => {
-                    const result = await onRegister(email, password, confirmPassword);
-
-                    if (result?.error) {
-                        Alert.alert("Oops, something went wrong", result.message);
-                        return;
-                    }
-                    router.push('/profile');
-                }}
+                handlePress={handleRegister}
             />
 
             <View style={{flexDirection: 'row'}}>

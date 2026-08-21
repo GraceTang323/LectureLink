@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import type { PoolClient } from 'pg';
 import "dotenv/config";
 
-const TRIM_NUMBER = 20;
+const CLEANUP_THRESHOLD = 20;
 
 export async function register(
     email: string, 
@@ -134,13 +134,13 @@ export async function refresh(
     try {
         await client.query('BEGIN');
 
-        // check table size, trim if necessary
-        const rowCount = await client.query(`
-            SELECT COUNT(*) FROM refresh_tokens 
-            WHERE revoked_at IS NOT NULL 
-            OR expires_at < NOW();
+        // check refresh_tokens table size, trim if necessary
+        const expiredCount = await client.query(`
+            SELECT COUNT(*)::int AS count 
+            FROM refresh_tokens 
+            WHERE revoked_at IS NOT NULL OR expires_at < NOW();
         `);
-        if (rowCount.rows[0] > TRIM_NUMBER) {
+        if (expiredCount.rows[0].count > CLEANUP_THRESHOLD) {
             await client.query('DELETE FROM refresh_tokens WHERE revoked_at IS NOT NULL OR expires_at < NOW();');
         }
 
@@ -213,6 +213,7 @@ export async function logout(
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+
         // revoke refresh token
         await client.query(
             'UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = $1;',

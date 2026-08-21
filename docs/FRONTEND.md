@@ -49,3 +49,23 @@ frontend/
         ├── profile.ts
         └── matches.ts
 ```
+
+Navigation is handled file-based via Expo Router. For clear, intuitive management of tabs and nested screens, I followed a general recommended directory structure:
+
+```md
+Lecturelink/
+└── app/
+    ├── _layout.tsx              # Root Layout (Root Stack, Auth Context Provider)
+    ├── (auth)/                  # Auth Group (Hidden from URL)
+    │   ├── login.tsx            # /login
+    │   └── register.tsx         # /register
+    ├── (tabs)/                  # Main Application Tabs Group
+    │   ├── _layout.tsx          # Defines the Bottom Tab Bar Navigation
+    │   ├── index.tsx            # First Tab: Home Screen (/index)
+    │   ├── explore.tsx          # Second Tab: Explore Screen
+    │   └── profile/             # Third Tab: Profile Stack (Handles nested screens)
+    │       ├── _layout.tsx      # Profile Stack Layout (Inner Stack)
+    │       ├── index.tsx        # Profile Main Screen
+    │       └── settings.tsx     # Nested Profile Screen (/profile/settings)
+    └── +not-found.tsx           # Fallback 404 Screen
+```
