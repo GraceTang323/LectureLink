@@ -14,7 +14,7 @@ interface AuthProps {
     onLogin: (email: string, password: string) => Promise<any>;
     onLogout: () => Promise<any>;
     onRefresh: (refreshToken: string) => Promise<any>;
-    completeProfile: () => void;
+    setProfileComplete: (complete: boolean) => void;
 }
 
 const IP_ADDRESS = process.env.EXPO_PUBLIC_IP_ADDRESS;
@@ -31,7 +31,7 @@ export const AuthContext = createContext<AuthProps>({
     onLogin: async () => {},
     onLogout: async () => {},
     onRefresh: async () => {},
-    completeProfile: () => {},
+    setProfileComplete: async () => {},
 });
 
 // need to handle login, register, logout, and refresh
@@ -55,20 +55,20 @@ export const AuthProvider = ({children}: any) => {
                 const savedRefreshToken = await SecureStore.getItemAsync("refreshToken");
                 // refresh token exists, refresh for new access token and update auth status
                 if (savedRefreshToken) {
-                    const newToken = await refresh(savedRefreshToken);
+                    const result = await refresh(savedRefreshToken);
 
                     setAuthState({
-                        token: newToken,
+                        token: result.accessToken,
                         authenticated: true,
-                        profileComplete: authState.profileComplete,
+                        profileComplete: result.completed,
                         loading: false,
                     });
                 } else {
-                    // await clean token table? periodically delete expired or revoked tokens in refresh_tokens table
+                    // no refresh token, no user logged in
                     setAuthState({
                         token: null,
                         authenticated: false,
-                        profileComplete: authState.profileComplete, // TODO fix?
+                        profileComplete: false,
                         loading: false,
                     });
                 }
@@ -77,7 +77,7 @@ export const AuthProvider = ({children}: any) => {
                 setAuthState({
                     token: null,
                     authenticated: false,
-                    profileComplete: authState.profileComplete,
+                    profileComplete: false,
                     loading: false,
                 });
             }
@@ -153,7 +153,7 @@ export const AuthProvider = ({children}: any) => {
             setAuthState({
                 token: data.accessToken,
                 authenticated: true,
-                profileComplete: authState.profileComplete,
+                profileComplete: data.user.completed,
                 loading: false
             });
 
@@ -186,7 +186,7 @@ export const AuthProvider = ({children}: any) => {
             setAuthState({
                 token: null,
                 authenticated: false,
-                profileComplete: authState.profileComplete,
+                profileComplete: false,
                 loading: false,
             });
 
@@ -215,7 +215,7 @@ export const AuthProvider = ({children}: any) => {
             await SecureStore.setItemAsync('accessToken', data.accessToken);
             await SecureStore.setItemAsync('refreshToken', data.refreshToken);
 
-            return data.accessToken;
+            return data;
 
         } catch (err) {
             console.error(err);
@@ -223,8 +223,7 @@ export const AuthProvider = ({children}: any) => {
         }
     }
 
-
-    const completeProfile = () => {
+    const setProfileComplete = () => {
         setAuthState(prev => ({
             ...prev,
             profileComplete: true,
@@ -237,7 +236,7 @@ export const AuthProvider = ({children}: any) => {
         onLogin: login,
         onLogout: logout,
         onRefresh: refresh,
-        completeProfile,
+        setProfileComplete,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

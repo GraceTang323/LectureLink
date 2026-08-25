@@ -1,6 +1,6 @@
 import { Alert, StyleSheet, Text, View } from 'react-native'
 import React, { useState } from 'react'
-import { useRouter, Link } from 'expo-router';
+import { Link } from 'expo-router';
 import InputField from '@/src/components/forms/InputField'
 import LoginButton from '@/src/components/Buttons'
 import { useAuth } from '@/src/hooks/useAuth';
@@ -8,7 +8,6 @@ import { useAuth } from '@/src/hooks/useAuth';
 const LoginScreen = () => {
     const [ email, setEmail ] = useState('');
     const [ password, setPassword ] = useState('');
-    const router = useRouter();
     const { onLogin } = useAuth();
 
     const handleLogin = async () => {
