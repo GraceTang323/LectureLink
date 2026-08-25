@@ -9,7 +9,7 @@ const CreateProfileScreen = () => {
     const [gradDate, setGradDate] = useState("");
     const [bio, setBio] = useState("");
 
-    const { authState, completeProfile } = useAuth();
+    const { authState, setProfileComplete } = useAuth();
 
     const handleCreateProfile = async () => {
         if (!username || !major || !gradDate) {
@@ -21,24 +21,18 @@ const CreateProfileScreen = () => {
         }
 
         try {
-            await profileService.initializeProfile(
+            const result = await profileService.initializeProfile(
                 username.trim(), 
                 major, 
                 Number(gradDate), 
                 authState.token,
                 bio.trim(),
             );
-
-            completeProfile();
+            setProfileComplete(result.user.completed);
 
             Alert.alert("Successfully created profile", "Welcome! Get started by adding some interests and courses");
             
-            console.log({
-                username,
-                major,
-                gradDate,
-                bio,
-            });
+            // console.log({username, major, gradDate, bio});
         } catch (err) {
             Alert.alert("Profile creation failed", err instanceof Error ? err.message : "Something went wrong");
         };

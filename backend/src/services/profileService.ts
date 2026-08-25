@@ -97,11 +97,36 @@ export async function updateProfile(
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        await client.query('UPDATE profiles SET major = $1, bio = $2, graduation_year = $3 WHERE user_id = $4',
+        const result = await client.query(`UPDATE profiles 
+            SET major = $1, bio = $2, graduation_year = $3, completed = true 
+            WHERE user_id = $4
+            RETURNING major, bio, graduation_year, completed`,
             [major, bio, graduation_year, userId]
         );
-        await client.query('UPDATE users SET display_name = $1 WHERE id = $2', [display_name, userId]);
+        const data = result.rows[0];
+
+        const userResult = await client.query(`
+            UPDATE users 
+            SET display_name = $1 
+            WHERE id = $2
+            RETURNING display_name`, 
+            [display_name, userId]);
+
+        const userNameData = userResult.rows[0].display_name;
         await client.query('COMMIT');
+
+        return {
+            status: 200,
+            data: {
+                user: {
+                    display_name: userNameData,
+                    major: data.major,
+                    graduation_year: data.graduation_year,
+                    bio: data.bio,
+                    completed: data.completed,
+                }
+            },
+        }
     } catch (err) {
         await client.query('ROLLBACK');
         console.log(err);

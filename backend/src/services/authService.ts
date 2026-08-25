@@ -79,8 +79,12 @@ export async function login(
 
     try {
         await client.query('BEGIN');
-        // fetch user by email
-        const result = await client.query('SELECT * from users WHERE email = ($1);', [email]);
+        // fetch user details and profile completion status
+        const result = await client.query(`
+            SELECT u.*, p.completed
+            FROM users u 
+            INNER JOIN profiles p ON u.id = p.user_id
+            WHERE u.email = ($1);`, [email]);
         if (result.rowCount === 0) {
             await client.query('COMMIT');
             return {
@@ -100,6 +104,7 @@ export async function login(
             };
         }
         const { accessToken, refreshToken } = await createSession(client, user);
+        
         await client.query('COMMIT');
 
         // login successful
@@ -173,9 +178,9 @@ export async function refresh(
             'UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = $1;',
             [refreshHash]
         );
-        // get user
+        // get user and profile status
         const getUserResult = await client.query(
-            'SELECT * FROM users WHERE id = $1;',
+            'SELECT u.*, p.completed FROM users u INNER JOIN profiles p ON u.id = p.user_id WHERE u.id = $1;',
             [storedToken.user_id]
         );
         const user = getUserResult.rows[0];
@@ -188,6 +193,7 @@ export async function refresh(
         return {
             status: 201,
             data: { 
+                completed: user.completed,
                 accessToken: session.accessToken, 
                 refreshToken: session.refreshToken
             }

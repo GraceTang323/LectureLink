@@ -41,8 +41,8 @@ export async function putMe(req: Request, res: Response) {
         if (!userId) return;
 
         const { display_name, major, bio, graduation_year } = req.body;
-        await profileService.updateProfile(userId, display_name, major, bio, graduation_year);
-        res.status(201).json({ message: 'Profile updated successfully' });
+        const result = await profileService.updateProfile(userId, display_name, major, bio, graduation_year);
+        res.status(result.status).json(result.data);
 
     } catch (err) {
         console.error(err);
