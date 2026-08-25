@@ -27,7 +27,7 @@ function AppNavigator() {
       router.replace("/(auth)/login");
 
     } else if (authState.authenticated && !authState.profileComplete && inAuthGroup) {
-      router.replace("/(tabs)/profile");
+      router.replace("/(tabs)/profile/create");
 
     } else if (authState.authenticated && authState.profileComplete && inAuthGroup) {
       router.replace("/(tabs)");

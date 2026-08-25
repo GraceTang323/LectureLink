@@ -1,5 +1,5 @@
-import CreateProfileScreen from '@/src/screens/CreateProfileScreen'
+import ProfileScreen from '@/src/screens/ProfileScreen'
 
 export default function CreateProfile() {
-    return <CreateProfileScreen />;
+    return <ProfileScreen />;
 }

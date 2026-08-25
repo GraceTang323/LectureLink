@@ -1,6 +1,6 @@
 import { apiFetch } from '../services/api';
 
-export async function initializeProfile(
+export async function updateProfile(
     displayName: string,
     major: string,
     gradDate: number,
@@ -19,5 +19,15 @@ export async function initializeProfile(
             }),
         },
         accessToken ? accessToken : '',
+    );
+}
+
+export async function getMyProfile(
+    accessToken: string,
+) {
+    return apiFetch(
+        "/profile/me",
+        { method: "GET",},
+        accessToken,
     );
 }
