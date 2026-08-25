@@ -20,15 +20,21 @@ const CreateProfileScreen = () => {
             return;
         }
 
+        const year = Number(gradDate);
+            if (Number.isNaN(year)) {
+                Alert.alert("Invalid graduation year", "Please enter a valid graduation year");
+                return;
+            }
+
         try {
-            const result = await profileService.initializeProfile(
+            const result = await profileService.updateProfile(
                 username.trim(), 
-                major, 
-                Number(gradDate), 
+                major.trim(), 
+                year, 
                 authState.token,
                 bio.trim(),
             );
-            setProfileComplete(result.user.completed);
+            setProfileComplete(result.completed);
 
             Alert.alert("Successfully created profile", "Welcome! Get started by adding some interests and courses");
             
