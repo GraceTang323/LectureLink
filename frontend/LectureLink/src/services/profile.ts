@@ -1,5 +1,15 @@
 import { apiFetch } from '../services/api';
 
+export async function getMyProfile(
+    accessToken: string,
+) {
+    return apiFetch(
+        "/profile/me",
+        { method: "GET",},
+        accessToken,
+    );
+}
+
 export async function updateProfile(
     displayName: string,
     major: string,
@@ -22,12 +32,18 @@ export async function updateProfile(
     );
 }
 
-export async function getMyProfile(
+export async function putMePhoto(
+    photoUrl: string,
     accessToken: string,
 ) {
     return apiFetch(
-        "/profile/me",
-        { method: "GET",},
+        "/profile/me/photo",
+        {
+            method: "PUT",
+            body: JSON.stringify({
+                photoUrl: photoUrl,
+            })
+        },
         accessToken,
     );
 }

@@ -12,7 +12,6 @@ const HomeScreen = () => {
             <Text style={styles.text}>Logged in!</Text>
 
             <Text style={styles.subtitle}>More features coming soon!</Text>
-
             
             <LoginButton 
                 value="Log Out"

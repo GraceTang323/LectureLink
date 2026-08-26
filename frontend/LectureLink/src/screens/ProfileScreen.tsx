@@ -5,12 +5,14 @@ import { StyleSheet, View, Text, Alert,
 } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import * as profileService from "@/src/services/profile";
+import * as ImagePicker from "expo-image-picker";
 
 const ProfileScreen = () => {
     const { authState } = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     const [displayName, setDisplayName] = useState("");
     const [major, setMajor] = useState("");
@@ -75,11 +77,16 @@ const ProfileScreen = () => {
                 bio.trim(),
             );
 
+            if (photoUrl) {
+                await profileService.putMePhoto(photoUrl, authState.token);
+            }
+
             // update profile details
             setDisplayName(result.user.display_name);
             setMajor(result.user.major);
             setGraduationYear(result.user.graduation_year.toString());
             setBio(result.user.bio ?? "");
+            setPhotoUrl(photoUrl);
             // set photoUrl as well (or in another function)
 
             Alert.alert("Profile updated!", "Your profile has been successfully updated");
@@ -91,6 +98,30 @@ const ProfileScreen = () => {
             setSaving(false);
         }
     };
+
+    const pickImage = async () => {
+        // request device gallery permissions
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!permissionResult.granted) {
+            Alert.alert("Permission Required", "You need to allow camera roll access to change your photo");
+            return;
+        }
+        setIsUploading(true);
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,    // crop image to square
+            aspect: [1, 1],         // ratio for profile pictures
+            quality: 0.7,           // compress image
+        });
+
+        if (!result.canceled && result.assets[0].uri) {
+            const localUri = result.assets[0].uri;
+            setPhotoUrl(localUri); // update local UI preview
+        }
+        setIsUploading(false);
+    }
 
     if (loading) {
         return (
@@ -119,10 +150,8 @@ const ProfileScreen = () => {
                     />
                     <TouchableOpacity
                         style={styles.changePhotoButton}
-                        onPress={() => {
-                            // TODO: Implement later
-                            Alert.alert("Coming Soon!", "Profile photo selection not yet added");
-                        }}>
+                        onPress={pickImage}
+                        disabled={isUploading}>
                         <Text style={styles.changePhotoText}>Change Photo</Text>
                     </TouchableOpacity>
                 </View>
