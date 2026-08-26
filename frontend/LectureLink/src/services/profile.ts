@@ -10,6 +10,16 @@ export async function getMyProfile(
     );
 }
 
+export async function getCourses(
+    accessToken: string,
+) {
+    return apiFetch(
+        "/profile/courses",
+        { method: "GET" },
+        accessToken,
+    );
+}
+
 export async function updateProfile(
     displayName: string,
     major: string,
@@ -42,6 +52,22 @@ export async function putMePhoto(
             method: "PUT",
             body: JSON.stringify({
                 photoUrl: photoUrl,
+            })
+        },
+        accessToken,
+    );
+}
+
+export async function updateCourses(
+    courses: number[],
+    accessToken: string,
+) {
+    return apiFetch(
+        "/profile/me/courses",
+        {
+            method: "PUT",
+            body: JSON.stringify({
+                courses: courses,
             })
         },
         accessToken,

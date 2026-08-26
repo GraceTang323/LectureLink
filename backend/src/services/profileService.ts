@@ -154,28 +154,57 @@ export async function updateProfilePhoto(
     }
 }
 
+export async function getCourses() {
+    try {
+        const result = await pool.query('SELECT * FROM courses ORDER BY id');
+        return {
+            status: 200,
+            data: { courses: result.rows }
+        }
+    } catch (err) {
+        console.error(err);
+        return {
+            status: 500,
+            data: {error: err instanceof Error ? err.message : String(err) }
+        };
+    }
+}
+
+export async function getInterests() {
+    try {
+        const result = await pool.query('SELECT * FROM interests ORDER BY id');
+        return {
+            status: 200,
+            data: { courses: result.rows }
+        }
+    } catch (err) {
+        console.error(err);
+        return {
+            status: 500,
+            data: {error: err instanceof Error ? err.message : String(err) }
+        };
+    }
+}
+
 export async function updateInterests(
     userId: number, 
-    interests: string[] // assuming controller ensures length <= 5
+    interestIds: number[] // assuming controller ensures length <= 5
 ) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
         await client.query('DELETE FROM user_interests WHERE user_id = $1', [userId]);
-
-        // Get the interest IDs for the provided interest names
-        const result = await client.query('SELECT id FROM interests WHERE name = ANY($1)', [interests]);
-        const interestIds: number[] = result.rows.map((row) => row.id);
-
+        
         interestIds.forEach(async (interestId: number) => {
             await client.query('INSERT INTO user_interests (user_id, interest_id) VALUES ($1, $2)', [userId, interestId]);
         });
 
+        const result = await client.query('SELECT * FROM interests WHERE id = ANY($1)', [interestIds]);
         await client.query('COMMIT');
 
         return {
             status: 201,
-            data: { message: 'Interests updated successfully' }
+            data: { interests: result.rows }
         };
     } catch (err) {
         await client.query('ROLLBACK');
@@ -191,25 +220,24 @@ export async function updateInterests(
 
 export async function updateCourses(
     userId: number,
-    courses: string[] // assuming controller ensures length <= 5
+    courseIds: number[] // assuming controller ensures length <= 5
 ) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
         await client.query('DELETE FROM user_courses WHERE user_id = $1', [userId]);
 
-        const result = await client.query('SELECT id FROM courses WHERE course_code = ANY($1)', [courses]);
-        const courseIds: number[] = result.rows.map((row) => row.id);
-
         courseIds.forEach(async (courseId: number) => {
             await client.query('INSERT INTO user_courses (user_id, course_id) VALUES ($1, $2)', [userId, courseId]);
         });
 
+        const result = await client.query('SELECT * FROM courses WHERE id = ANY($1)', [courseIds]);
+
         await client.query('COMMIT');
 
         return {
-            status: 201,
-            data: { message: 'Courses updated successfully' }
+            status: 200,
+            data: { courses: result.rows }
         };
     } catch (err) {
         await client.query('ROLLBACK');

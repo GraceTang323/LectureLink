@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, Alert, 
     ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Image,
-    TouchableOpacity, TextInput
+    TouchableOpacity, TextInput, Modal, Pressable
 } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import * as profileService from "@/src/services/profile";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 
 const ProfileScreen = () => {
     const { authState } = useAuth();
 
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
+    const [loading, setLoading] = useState(true);           // profile fetching
+    const [saving, setSaving] = useState(false);            // profile updating
+    const [isUploading, setIsUploading] = useState(false);  // photo selection
+    const [menuVisible, setMenuVisible] = useState(false);
 
     const [displayName, setDisplayName] = useState("");
     const [major, setMajor] = useState("");
     const [graduationYear, setGraduationYear] = useState("");
     const [bio, setBio] = useState("");
     const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+    const router = useRouter();
     // setCourses
     // setInterests
     // setAvailability
@@ -136,11 +140,48 @@ const ProfileScreen = () => {
             style={styles.container}
             behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
+            <Modal
+                visible={menuVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setMenuVisible(false)}>
+                    <Pressable
+                        style={styles.modalOverlay}
+                        onPress={() => setMenuVisible(false)}>
+                            <View style={styles.menu}>
+                                <Pressable
+                                    onPress={() => {
+                                        setMenuVisible(false);
+                                        Alert.alert("TODO: Route to courses");
+                                        // router.push("/courses");
+                                    }}
+                                    style={styles.menuItem}>
+                                        <Text style={{fontSize: 16}}>Courses</Text>
+                                </Pressable>
+                                <Pressable
+                                    onPress={() => {
+                                        setMenuVisible(false);
+                                        Alert.alert("TODO: Route to interests");
+                                        // router.push("/interests");
+                                    }}
+                                    style={styles.menuItem}>
+                                        <Text style={{fontSize: 16}}>Interests</Text>
+                                </Pressable>
+                            </View>
+                    </Pressable>
+            </Modal>
             <ScrollView 
                 contentContainerStyle={styles.scrollContent}
                 keyboardShouldPersistTaps="handled"
             >
-                <Text style={styles.title}>My Profile</Text>
+                <View style={styles.titleRow}>
+                    <Text style={styles.title}>My Profile</Text>
+                    <Pressable
+                        onPress={() => setMenuVisible(true)}
+                        style={styles.menuButton}>
+                            <Text style={{fontSize: 28}}>⋮</Text>
+                    </Pressable>
+                </View>
                 
                 {/* Profile Picture */}
                 <View style={styles.photoContainer}>
@@ -229,56 +270,86 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#FFFFFF",
     },
-
     scrollContent: {
         padding: 24,
         paddingBottom: 40,
     },
-
     loadingContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
     },
-
     title: {
         fontSize: 28,
         fontWeight: "700",
-        marginBottom: 24,
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 24,
+    },
+    menuButton: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.1)",
+    },
+    menu: {
+        position: "absolute",
+        top: 70,
+        right: 16,
+        width: 180,
+        backgroundColor: "white",
+        borderRadius: 10,
+        paddingVertical: 8,
 
+        // iOS shadow
+        shadowColor: "#000",
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+
+        // Android
+        // elevation: 5,
+    },
+    menuItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+    },
     photoContainer: {
         alignItems: "center",
         marginBottom: 32,
     },
-
     profilePhoto: {
         width: 140,
         height: 140,
         borderRadius: 70,
         backgroundColor: "#E5E5E5",
     },
-
     changePhotoButton: {
         marginTop: 12,
     },
-
     changePhotoText: {
         color: "#007AFF",
         fontSize: 16,
         fontWeight: "600",
     },
-
     fieldContainer: {
         marginBottom: 20,
     },
-
     label: {
         fontSize: 16,
         fontWeight: "600",
         marginBottom: 8,
     },
-
     input: {
         borderWidth: 1,
         borderColor: "#D1D1D1",
@@ -288,18 +359,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         backgroundColor: "#FAFAFA",
     },
-
     bioInput: {
         minHeight: 120,
     },
-
     characterCount: {
         textAlign: "right",
         color: "#888888",
         marginTop: 4,
         fontSize: 12,
     },
-
     saveButton: {
         backgroundColor: "#007AFF",
         borderRadius: 10,
@@ -307,11 +375,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginTop: 10,
     },
-
     disabledButton: {
         opacity: 0.6,
     },
-
     saveButtonText: {
         color: "#FFFFFF",
         fontSize: 17,

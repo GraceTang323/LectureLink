@@ -7,6 +7,14 @@ router.get('/me', async (req: Request, res: Response) => {
     await profileController.getMyProfile(req, res);
 });
 
+router.get('/courses', async (req: Request, res: Response) => {
+    await profileController.getCourses(req, res);
+});
+
+router.get('/interests', async (req: Request, res: Response) => {
+    await profileController.getInterests(req, res);
+});
+
 router.get('/:userId', async (req: Request, res: Response) => {
     await profileController.getOtherProfile(req, res);
 });

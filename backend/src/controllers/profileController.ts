@@ -35,6 +35,30 @@ export async function getOtherProfile(req: Request, res: Response) {
     }
 }
 
+export async function getCourses(req: Request, res: Response) {
+    try {
+        await authorizeRequest(req, res);
+        
+        const result = await profileService.getCourses();
+        res.status(result.status).json(result.data);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export async function getInterests(req: Request, res: Response) {
+    try {
+        await authorizeRequest(req, res);
+        
+        const result = await profileService.getInterests();
+        res.status(result.status).json(result.data);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
 export async function putMe(req: Request, res: Response) {
     try {
         const userId = await authorizeRequest(req, res);
@@ -74,8 +98,8 @@ export async function putMeInterests(req: Request, res: Response) {
         if (interests.length > 5) {
             return res.status(401).json({ error: 'You can select a maximum of 5 interests' });
         }
-        await profileService.updateInterests(userId, interests);
-        res.status(201).json({ message: 'Interests updated successfully' });
+        const result = await profileService.updateInterests(userId, interests);
+        res.status(result.status).json(result.data);
 
     } catch (err) {
         console.error(err);
@@ -92,8 +116,8 @@ export async function putMeCourses(req: Request, res: Response) {
         if (courses.length > 5) {
             return res.status(401).json({ error: 'You can select a maximum of 5 courses' });
         }
-        await profileService.updateCourses(userId, courses);
-        res.status(201).json({ message: 'Courses updated successfully' });
+        const result = await profileService.updateCourses(userId, courses);
+        res.status(result.status).json(result.data);
 
     } catch (err) {
         console.error(err);
