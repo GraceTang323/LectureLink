@@ -3,6 +3,7 @@ import { Alert, View, ActivityIndicator, StyleSheet, Text, TextInput,
     FlatList, Pressable } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import * as profileService from "@/src/services/profile";
+import { useRouter } from "expo-router";
 
 const MAX_LENGTH = 5;
 
@@ -38,13 +39,15 @@ const CourseItem = ({course, selected, onPress}: CourseProps) => {
 }
 
 const SelectCoursesScreen = () => {
-    const { authState } = useAuth();
+    const { authState, setProfileComplete } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
     const [courses, setCourses] = useState<Course[]>([]);   // all courses available to select
     const [selectedCourses, setSelectedCourses] = useState<number[]>([]);   // course IDs the user selected
     const [search, setSearch] = useState(""); // filter search
+
+    const router = useRouter();
 
     useEffect(() => {
         const loadCourses = async () => {
@@ -100,11 +103,16 @@ const SelectCoursesScreen = () => {
             setSaving(true);
             const result = await profileService.updateCourses(selectedCourses, authState.token);
             const courses = result.courses;
+
             // clear all current selections
             setSelectedCourses([]);
             
             console.log("Courses saved:", courses);
             Alert.alert("Courses updated!", "Your courses have been successfully saved");
+
+            // set profile as complete
+            await profileService.putMeProfileComplete(authState.token);
+            setProfileComplete(true); // updating authState triggers navigation guard
 
         } catch (err) {
             console.error("Failed to update courses", err);

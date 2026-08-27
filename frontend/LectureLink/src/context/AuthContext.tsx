@@ -15,6 +15,7 @@ interface AuthProps {
     onLogout: () => Promise<any>;
     onRefresh: (refreshToken: string) => Promise<any>;
     setProfileComplete: (complete: boolean) => void;
+    resetAuth: () => void;
 }
 
 const IP_ADDRESS = process.env.EXPO_PUBLIC_IP_ADDRESS;
@@ -32,6 +33,7 @@ export const AuthContext = createContext<AuthProps>({
     onLogout: async () => {},
     onRefresh: async () => {},
     setProfileComplete: async () => {},
+    resetAuth: async () => {},
 });
 
 // need to handle login, register, logout, and refresh
@@ -209,6 +211,7 @@ export const AuthProvider = ({children}: any) => {
             const data = await response.json();
 
             if (!response.ok) {
+                await resetAuth(); // catch errors where user is unauthenticated but past auth
                 throw new Error("Refresh failed");
             }
 
@@ -230,6 +233,18 @@ export const AuthProvider = ({children}: any) => {
         }));
     };
 
+    const resetAuth = async () => {
+        setAuthState({
+            token: null,
+            authenticated: null,
+            profileComplete: false,
+            loading: false,
+        });
+
+        await SecureStore.deleteItemAsync('accessToken');
+        await SecureStore.deleteItemAsync('refreshToken');
+    }
+
     const value = {
         authState: authState,
         onRegister: register,
@@ -237,6 +252,7 @@ export const AuthProvider = ({children}: any) => {
         onLogout: logout,
         onRefresh: refresh,
         setProfileComplete,
+        resetAuth,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

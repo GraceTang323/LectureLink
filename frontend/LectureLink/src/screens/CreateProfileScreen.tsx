@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import * as profileService from '@/src/services/profile';
 import { useAuth } from "../hooks/useAuth";
+import { useRouter } from "expo-router";
 
 const CreateProfileScreen = () => {
     const [username, setUsername] = useState("");
@@ -9,7 +10,8 @@ const CreateProfileScreen = () => {
     const [gradDate, setGradDate] = useState("");
     const [bio, setBio] = useState("");
 
-    const { authState, setProfileComplete } = useAuth();
+    const { authState } = useAuth();
+    const router = useRouter();
 
     const handleCreateProfile = async () => {
         if (!username || !major || !gradDate) {
@@ -27,14 +29,18 @@ const CreateProfileScreen = () => {
             }
 
         try {
-            const result = await profileService.updateProfile(
+            // first save profile data in database
+            await profileService.updateProfile(
                 username.trim(), 
                 major.trim(), 
                 year, 
                 authState.token,
                 bio.trim(),
             );
-            setProfileComplete(result.completed);
+            // don't set profile as complete yet, navigate to course selection screen
+            // setProfileComplete(result.completed);
+
+            router.push("/onboarding/courses");
 
             Alert.alert("Successfully created profile", "Welcome! Get started by adding some interests and courses");
             

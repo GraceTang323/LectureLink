@@ -1,11 +1,35 @@
 import { Alert, Text, View, StyleSheet } from 'react-native';
+import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import LoginButton from '@/src/components/Buttons';
 import { useAuth } from '../hooks/useAuth';
+import * as ProfileService from '@/src/services/profile';
+import ConfirmationModal from '../components/ConfirmationModal';
+
 
 const HomeScreen = () => {
+    const [visible, setVisible] = useState(false);
+
+    const { authState, onLogout, resetAuth } = useAuth();
     const router = useRouter();
-    const { onLogout } = useAuth();
+
+    const handleDelete = async () => {
+        setVisible(false);
+        // delete user from database
+        const result = await ProfileService.deleteAccount(authState.token);
+
+        if (result?.error) {
+            Alert.alert("Deletion failed", result.message);
+            return;
+        }
+        // clear global data
+        await resetAuth();
+        Alert.alert("Successfully deleted account", "Your account has been deleted, rerouting you back to login");
+    }
+
+    const handleCancel = () => {
+        setVisible(false);
+    }
 
     return (
         <View style = {styles.container}>
@@ -13,17 +37,32 @@ const HomeScreen = () => {
 
             <Text style={styles.subtitle}>More features coming soon!</Text>
             
-            <LoginButton 
-                value="Log Out"
-                handlePress={async () => {
-                    const result = await onLogout();
-                    if (result?.error) {
-                        Alert.alert('Logout failed', result.message);
-                        return;
-                    }
-                    router.navigate('/');
-                }}
-            />
+            <View style={{flexDirection: 'row', justifyContent: 'space-evenly'}}>
+                <LoginButton 
+                    value="Log Out"
+                    handlePress={async () => {
+                        const result = await onLogout();
+                        if (result?.error) {
+                            Alert.alert('Logout failed', result.message);
+                            return;
+                        }
+                        // router.navigate('/');
+                    }}
+                />
+                <LoginButton 
+                    value="Delete Account"
+                    handlePress={() => setVisible(true)}
+                />
+
+                <ConfirmationModal
+                    visible={visible}
+                    title="Delete your account?"
+                    message="This action is permanent and cannot be undone."
+                    onConfirm={handleDelete}
+                    onCancel={handleCancel}
+                />
+            </View>
+            
         </View>
     )
 };

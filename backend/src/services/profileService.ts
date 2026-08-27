@@ -98,9 +98,9 @@ export async function updateProfile(
     try {
         await client.query('BEGIN');
         const result = await client.query(`UPDATE profiles 
-            SET major = $1, bio = $2, graduation_year = $3, completed = true 
+            SET major = $1, bio = $2, graduation_year = $3 
             WHERE user_id = $4
-            RETURNING major, bio, graduation_year, completed`,
+            RETURNING major, bio, graduation_year`,
             [major, bio, graduation_year, userId]
         );
         const data = result.rows[0];
@@ -123,7 +123,6 @@ export async function updateProfile(
                     major: data.major,
                     graduation_year: data.graduation_year,
                     bio: data.bio,
-                    completed: data.completed,
                 }
             },
         }
@@ -136,6 +135,23 @@ export async function updateProfile(
         };
     } finally {
         client.release();
+    }
+}
+
+export async function updateProfileCompletion(
+    userId: number,
+) {
+    try {
+        await pool.query('UPDATE profiles SET completed = true WHERE user_id = $1', [userId]);
+        return {
+            status: 200
+        };
+    } catch (err) {
+        console.log(err);
+        return {
+            status: 500,
+            data: { error: err instanceof Error ? err.message : String(err) }
+        }
     }
 }
 
@@ -194,7 +210,7 @@ export async function updateInterests(
     try {
         await client.query('BEGIN');
         await client.query('DELETE FROM user_interests WHERE user_id = $1', [userId]);
-        
+
         interestIds.forEach(async (interestId: number) => {
             await client.query('INSERT INTO user_interests (user_id, interest_id) VALUES ($1, $2)', [userId, interestId]);
         });
@@ -294,5 +310,39 @@ export async function deleteAvailability(
             status: 500,
             data: { error: err instanceof Error ? err.message : String(err) }
         };
+    }
+}
+
+export async function deleteMe(
+    userId: number
+) {
+    try {
+        const result = await pool.query(`
+            DELETE FROM users 
+            WHERE id = $1 
+            RETURNING id, display_name
+            `, [userId]);
+        const user = result.rows[0];
+
+        if (!user) {
+            return {
+                status: 200,
+                data: { message: "User does not exist" }
+            }
+        }
+
+        return {
+            status: 200,
+            data: {
+                id: user.id,
+                username: user.display_name,
+            }
+        }
+    } catch (err) {
+        console.log(err);
+        return {
+            status: 500,
+            data: { error: err instanceof Error ? err.message : String(err) }
+        }
     }
 }

@@ -23,6 +23,10 @@ router.put('/me', async (req: Request, res: Response) => {
     await profileController.putMe(req, res);
 });
 
+router.put('/me/complete', async (req: Request, res: Response) => {
+    await profileController.putMeProfileComplete(req, res);
+});
+
 router.put('/me/photo', async (req: Request, res: Response) => {
     await profileController.putMePhoto(req, res);
 });
@@ -34,6 +38,10 @@ router.put('/me/availability', async (req: Request, res: Response) => {
 router.delete('/me/availability', async (req: Request, res: Response) => {
     await profileController.deleteMeAvailability(req, res);
 });
+
+router.delete('/me', async (req: Request, res: Response) => {
+    await profileController.deleteMe(req, res);
+})
 
 router.put('/me/interests', async (req: Request, res: Response) => {
     await profileController.putMeInterests(req, res);

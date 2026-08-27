@@ -42,6 +42,18 @@ export async function updateProfile(
     );
 }
 
+export async function putMeProfileComplete(
+    accessToken: string
+) {
+    return apiFetch(
+        "/profile/me/complete",
+        {
+            method: "PUT",
+        },
+        accessToken,
+    );
+}
+
 export async function putMePhoto(
     photoUrl: string,
     accessToken: string,
@@ -71,5 +83,17 @@ export async function updateCourses(
             })
         },
         accessToken,
+    );
+}
+
+export async function deleteAccount(
+    accessToken: string | null,
+) {
+    return apiFetch(
+        "/profile/me",
+        {
+            method: "DELETE",
+        },
+        accessToken ? accessToken : "",
     );
 }

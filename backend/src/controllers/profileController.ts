@@ -74,6 +74,19 @@ export async function putMe(req: Request, res: Response) {
     }
 }
 
+export async function putMeProfileComplete(req: Request, res: Response) {
+    try {
+        const userId = await authorizeRequest(req, res);
+        if (!userId) return;
+
+        const result = await profileService.updateProfileCompletion(userId);
+        res.status(result.status).json({ message: "Profile set as complete" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
 export async function putMePhoto(req: Request, res: Response) {
     try {
         const userId = await authorizeRequest(req, res);
@@ -170,5 +183,18 @@ export async function deleteMeAvailability(req: Request, res: Response) {
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export async function deleteMe(req: Request, res: Response) {
+    try {
+        const userId = await authorizeRequest(req, res);
+        if (!userId) return;
+
+        const result = await profileService.deleteMe(userId);
+        res.status(result.status).json(result.data);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 }

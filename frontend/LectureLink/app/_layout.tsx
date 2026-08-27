@@ -15,22 +15,24 @@ export default function RootLayout() {
 // Handles expo router redirect upon launch
 function AppNavigator() {
   const { authState } = useAuth();
-  const segments = useSegments();
+  const segments = useSegments() as string[];
   const router = useRouter();
 
   useEffect(() => {
     if (authState.loading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    const inOnboarding = segments.includes("onboarding");
 
     if (!authState.authenticated && !inAuthGroup) {
-      router.replace("/(auth)/login");
+      router.replace("/(auth)/login");          // not logged in
 
-    } else if (authState.authenticated && !authState.profileComplete && inAuthGroup) {
-      router.replace("/(tabs)/profile/create");
+    } else if (authState.authenticated && 
+      !authState.profileComplete && !inOnboarding) {
+      router.replace("/onboarding/create");     // profile incomplete and NOT currently in onboarding
 
-    } else if (authState.authenticated && authState.profileComplete && inAuthGroup) {
-      router.replace("/(tabs)");
+    } else if (authState.authenticated && authState.profileComplete && (inAuthGroup || inOnboarding)) {
+      router.replace("/(tabs)");                // home screen
 
     }
 
