@@ -7,91 +7,82 @@ import { useRouter } from "expo-router";
 
 const MAX_LENGTH = 5;
 
-type Course = {
-    id: number;
-    course_code: string;
-    course_name: string;
-};
+type Interest = {
+    id: number,
+    name: string,
+}
 
-type CourseProps = {
-    course: Course;
-    selected: boolean;
-    onPress: () => void;
-};
+type InterestProps = {
+    interest: Interest,
+    selected: boolean,
+    onPress: () => void,
+}
 
-const CourseItem = ({course, selected, onPress}: CourseProps) => {
+const InterestItem = ({interest, selected, onPress}: InterestProps) => {
     return (
         <Pressable
             onPress={onPress}
-            style={[
-                styles.item,
-                selected && styles.selectedItem,
-            ]}>
-            <View>
-                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                    <Text style={styles.courseCode}>{course.course_code}</Text>
-                    {selected && (<Text>✓</Text>)}
-                </View>
-                <Text style={styles.itemText}>{course.course_name}</Text>
+            style={[styles.item, 
+                selected && styles.selectedItem]}
+        >
+            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Text>{interest.name}</Text>
+                {selected && (<Text>✓</Text>)}
             </View>
         </Pressable>
-    );
+    )
 }
 
-const SelectCoursesScreen = () => {
+const SelectInterestsScreen = () => {
     const { authState, setProfileComplete } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    const [courses, setCourses] = useState<Course[]>([]);   // all courses available to select
-    const [selectedCourses, setSelectedCourses] = useState<number[]>([]);   // course IDs the user selected
-    const [search, setSearch] = useState(""); // filter search
+    const [interests, setInterests] = useState<Interest[]>([]);
+    const [selectedInterests, setSelectedInterests] = useState<number[]>([]);
+    const [search, setSearch] = useState("");
 
-    const router = useRouter();
+    // const router = useRouter();
 
     useEffect(() => {
-        const loadCourses = async () => {
+        const loadInterests = async () => {
             if (!authState.token) {
                 setLoading(false);
                 return;
             }
             try {
-                const result = await profileService.getCourses(authState.token);
-                setCourses(result.courses);
+                const result = await profileService.getInterests(authState.token);
+                setInterests(result.interests);
 
             } catch (err) {
-                console.error("Failed to load courses", err);
-                Alert.alert("Error", "Unable to load courses");
+                console.error("Failed to load interests", err);
+                Alert.alert("Error", "Unable to load interests");
             } finally {
                 setLoading(false);
             }
         };
-        loadCourses();
+        loadInterests();
     }, [authState.token]);
 
-    const toggleCourse = (courseId: number) => {
-        setSelectedCourses(prev => {
-            // second tap removes course from selection
-            if (prev.includes(courseId)) {
-                return prev.filter(id => id !== courseId);
+    const toggleInterest = (interestId: number) => {
+        setSelectedInterests(prev => {
+            if (prev.includes(interestId)) {
+                return prev.filter(id => id !== interestId);
             }
-            // reject selections over the limit
+
             if (prev.length >= MAX_LENGTH) {
-                Alert.alert("Maximum Reached", `You can select a maximum of ${MAX_LENGTH} courses.`);
+                Alert.alert("Maximum Reached", `You can select a maximum of ${MAX_LENGTH} interests.`);
                 return prev;
             }
-            return [...prev, courseId];
+            return [...prev, interestId];
         })
     }
 
-    const filteredCourses = courses.filter(course => {
+    const filteredInterests = interests.filter(interest => {
         const query = search.toLowerCase();
 
-        return (
-            course.course_code.toLowerCase().includes(query) || 
-            course.course_name.toLowerCase().includes(query)
-        );
-    })
+        return interest.name.toLowerCase().includes(query);
+    });
 
     const handleSave = async () => {
         if (!authState.token) {
@@ -101,21 +92,22 @@ const SelectCoursesScreen = () => {
 
         try {
             setSaving(true);
-            const result = await profileService.updateCourses(selectedCourses, authState.token);
-            const courses = result.courses;
 
-            // clear all current selections
-            setSelectedCourses([]);
-            
-            console.log("Courses saved:", courses);
-            Alert.alert("Courses updated!", "Your courses have been successfully saved");
+            const result = await profileService.updateInterests(selectedInterests, authState.token);
+            const interests = result.interests;
 
-            // push to next step of onboarding
-            router.push("/onboarding/interests");
+            setSelectedInterests([]); // clear selection
+
+            console.log("Saved interests:", interests);
+            Alert.alert("Interests updated!", "Your interests have been successfully saved");
+
+            // set profile as complete and update authState
+            await profileService.putMeProfileComplete(authState.token);
+            setProfileComplete(true); // updating authState triggers navigation guard
 
         } catch (err) {
-            console.error("Failed to update courses", err);
-            Alert.alert("Update failed", "Unable to save your courses");
+            console.error("Failed to save interests", err);
+            Alert.alert("Update failed", "Unable to save your interests");
         } finally {
             setSaving(false);
         }
@@ -131,44 +123,43 @@ const SelectCoursesScreen = () => {
 
     return (
         <View>
-            <FlatList 
-                data={filteredCourses}
+            <FlatList
+                data={filteredInterests}
                 renderItem={({item}) => (
-                    <CourseItem 
-                        course={item}
-                        selected={selectedCourses.includes(item.id)}
-                        onPress={() => toggleCourse(item.id)}
+                    <InterestItem 
+                        interest={item}
+                        selected={selectedInterests.includes(item.id)}
+                        onPress={() => toggleInterest(item.id)}
                     />
                 )}
                 keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle= {styles.listContent}
+                contentContainerStyle={styles.listContent}
                 ListHeaderComponent={
                     <>
-                        <Text style={styles.title}>Courses</Text>
+                        <Text style={styles.title}>Interests</Text>
                         <View style={styles.container}>
                             <TextInput 
                                 style={styles.input}
-                                placeholder="Search courses..."
+                                placeholder="Search interests..."
                                 value={search}
                                 onChangeText={setSearch}
                             />
                         </View>
-                        <Text style={{marginLeft: 20, paddingVertical: 8}}>{selectedCourses.length} / {MAX_LENGTH} selected</Text>
+                        <Text style={{marginLeft: 20, paddingVertical: 8}}>{selectedInterests.length} / {MAX_LENGTH} selected</Text>
                     </>
                 }
             />
-
-            {selectedCourses.length > 0 && (
+            {selectedInterests.length > 0 && (
                 <View style={styles.saveContainer}>
-                    <Pressable
+                    <Pressable 
                         style={styles.saveButton}
                         onPress={handleSave}
                         disabled={saving}>
                             {saving ? (
-                                <ActivityIndicator color="#fff"/>
+                                <ActivityIndicator size="large"/>
                             ) : (
                                 <Text style={styles.saveButtonText}>
-                                    Save {selectedCourses.length} Course{selectedCourses.length === 1 ? "" : "s"}
+                                    Save {selectedInterests.length} Interest{selectedInterests.length === 1 ? "" : "s"}
                                 </Text>
                             )}
                     </Pressable>
@@ -199,20 +190,20 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     item: {
-        backgroundColor: '#f9c2ff',
+        backgroundColor: '#c2d8ff',
         padding: 20,
         marginVertical: 8,
         marginHorizontal: 16,
         borderRadius: 10,
     },
     selectedItem: {
-        backgroundColor: '#f399ff',
+        backgroundColor: '#9999ff',
     },
     itemText: {
         fontSize: 16,
     },
     selectedItemText: {
-        color: '#fbdeff',
+        color: '#dee9ff',
         fontSize: 20,
     },
     courseCode: {
@@ -251,4 +242,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SelectCoursesScreen;
+export default SelectInterestsScreen;

@@ -191,7 +191,7 @@ export async function getInterests() {
         const result = await pool.query('SELECT * FROM interests ORDER BY id');
         return {
             status: 200,
-            data: { courses: result.rows }
+            data: { interests: result.rows }
         }
     } catch (err) {
         console.error(err);
@@ -219,7 +219,7 @@ export async function updateInterests(
         await client.query('COMMIT');
 
         return {
-            status: 201,
+            status: 200,
             data: { interests: result.rows }
         };
     } catch (err) {

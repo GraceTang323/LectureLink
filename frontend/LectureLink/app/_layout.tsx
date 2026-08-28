@@ -47,9 +47,11 @@ function AppNavigator() {
   }
 
   // Both (auth) and (tabs) groups are part of the route tree
-  return <Stack screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="(auth)" options={{ presentation: 'modal'}}/>
-  </Stack>;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+    </Stack>
+  );
 }
 
 const styles = StyleSheet.create({

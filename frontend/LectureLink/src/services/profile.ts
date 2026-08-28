@@ -20,6 +20,16 @@ export async function getCourses(
     );
 }
 
+export async function getInterests(
+    accessToken: string,
+) {
+    return apiFetch(
+        "/profile/interests",
+        { method: "GET" },
+        accessToken,
+    );
+}
+
 export async function updateProfile(
     displayName: string,
     major: string,
@@ -80,6 +90,22 @@ export async function updateCourses(
             method: "PUT",
             body: JSON.stringify({
                 courses: courses,
+            })
+        },
+        accessToken,
+    );
+}
+
+export async function updateInterests(
+    interests: number[],
+    accessToken: string,
+) {
+    return apiFetch(
+        "/profile/me/interests",
+        {
+            method: "PUT",
+            body: JSON.stringify({
+                interests: interests,
             })
         },
         accessToken,
